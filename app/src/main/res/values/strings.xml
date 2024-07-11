@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Cats</string>
+    <string name="icon_button_delete">Delete</string>
+    <string name="get_a_cat">Get a Cat</string>
+    <string name="get_another_cat">Get another cat</string>
+    <string name="app_title">CAT!</string>
+    <string name="all_the_other_cats">All the other cats</string>
+</resources>
