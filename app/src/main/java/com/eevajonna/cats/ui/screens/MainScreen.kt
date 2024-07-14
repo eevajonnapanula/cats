@@ -19,6 +19,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -65,9 +66,8 @@ fun MainScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(MainScreen.verticalSpacing),
     ) {
-        Text(
+        Title(
             text = stringResource(R.string.app_title),
-            style = MaterialTheme.typography.titleLarge,
         )
 
         selectedCat.value?.let { id ->
@@ -94,9 +94,8 @@ fun MainScreen(
         }
 
         if (catIds.value.isNotEmpty()) {
-            Text(
+            Title(
                 text = stringResource(R.string.all_the_other_cats),
-                style = MaterialTheme.typography.titleLarge,
             )
 
             val lastItem = catIds.value.last()
@@ -130,6 +129,15 @@ fun MainScreen(
             }
         }
     }
+}
+
+@Composable
+fun Title(text: String) {
+    Text(
+        modifier = Modifier.semantics { heading() },
+        text = text,
+        style = MaterialTheme.typography.titleLarge,
+    )
 }
 
 object MainScreen {
