@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -36,9 +37,15 @@ import com.eevajonna.cats.ui.theme.CatsTheme
 @Composable
 fun CatCard(
     id: String,
+    lastIdOnStack: String,
     modifier: Modifier = Modifier,
     removeCat: () -> Unit,
 ) {
+    val isLastOnStackPerIds =
+        remember(id, lastIdOnStack) {
+            id == lastIdOnStack
+        }
+
     ElevatedCard(
         modifier =
             modifier
@@ -50,7 +57,12 @@ fun CatCard(
             ),
     ) {
         IconButton(
-            modifier = Modifier.align(Alignment.End),
+            modifier =
+                Modifier
+                    .align(Alignment.End)
+                    .focusProperties {
+                        canFocus = isLastOnStackPerIds
+                    },
             onClick = {
                 removeCat()
             },
@@ -61,7 +73,7 @@ fun CatCard(
             )
         }
         SubcomposeAsyncImage(
-            model = "${CatCard.url}$id",
+            model = "${CatCard.URL}$id",
             modifier =
                 Modifier
                     .padding(CatCard.padding)
@@ -85,6 +97,7 @@ fun CatCard(
 @Composable
 fun AnimatedCatCard(
     id: String,
+    lastIdOnStack: String,
     modifier: Modifier = Modifier,
     isEven: Boolean = true,
     removeCat: () -> Unit,
@@ -106,6 +119,7 @@ fun AnimatedCatCard(
     ) {
         CatCard(
             id = id,
+            lastIdOnStack = lastIdOnStack,
             modifier = modifier,
         ) {
             visible = false
@@ -119,7 +133,7 @@ object CatCard {
     val padding = 12.dp
     val size = 350.dp
     val elevation = 6.dp
-    val url = "https://cataas.com/cat/"
+    const val URL = "https://cataas.com/cat/"
 }
 
 @Composable
@@ -127,6 +141,6 @@ object CatCard {
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 fun CatCardPreview() {
     CatsTheme {
-        CatCard(id = "5MZcPeMXyk4IAUQx") {}
+        CatCard(id = "5MZcPeMXyk4IAUQx", lastIdOnStack = "") {}
     }
 }

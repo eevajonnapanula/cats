@@ -12,10 +12,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.eevajonna.cats.CatsViewModel
 import com.eevajonna.cats.R
@@ -23,6 +29,8 @@ import com.eevajonna.cats.ui.components.AnimatedCatCard
 import com.eevajonna.cats.ui.components.CardStack
 import com.eevajonna.cats.ui.components.CatCard
 import com.eevajonna.cats.ui.utils.isEven
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 @Composable
@@ -32,6 +40,19 @@ fun MainScreen(
 ) {
     val catIds = viewModel.cats.collectAsState()
     val selectedCat = viewModel.selectedCat.collectAsState()
+    val scope = rememberCoroutineScope()
+    val focusManager = LocalFocusManager.current
+
+    fun deleteCat(
+        id: String,
+        focusToPrevious: Boolean = false,
+    ) {
+        scope.launch {
+            viewModel.deleteCat(id)
+            delay(1000)
+            if (focusToPrevious) focusManager.moveFocus(FocusDirection.Previous)
+        }
+    }
 
     Column(
         modifier =
@@ -45,14 +66,13 @@ fun MainScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(MainScreen.verticalSpacing),
     ) {
-        Text(
+        Title(
             text = stringResource(R.string.app_title),
-            style = MaterialTheme.typography.titleLarge,
         )
 
-        selectedCat.value?.let {
-            CatCard(id = it) {
-                viewModel.deleteCat(it)
+        selectedCat.value?.let { id ->
+            CatCard(id = id, lastIdOnStack = id) {
+                deleteCat(id)
             }
         }
 
@@ -74,12 +94,20 @@ fun MainScreen(
         }
 
         if (catIds.value.isNotEmpty()) {
-            Text(
+            Title(
                 text = stringResource(R.string.all_the_other_cats),
-                style = MaterialTheme.typography.titleLarge,
             )
 
-            CardStack {
+            val lastItem = catIds.value.last()
+
+            CardStack(
+                Modifier.semantics {
+                    onClick {
+                        deleteCat(lastItem)
+                        true
+                    }
+                },
+            ) {
                 catIds.value.mapIndexed { index, id ->
                     val degrees =
                         remember {
@@ -90,13 +118,26 @@ fun MainScreen(
                         modifier = Modifier.rotate(degrees),
                         isEven = index.isEven(),
                         id = id,
+                        lastIdOnStack = lastItem,
                     ) {
-                        viewModel.deleteCat(id)
+                        deleteCat(
+                            id = id,
+                            focusToPrevious = true,
+                        )
                     }
                 }
             }
         }
     }
+}
+
+@Composable
+fun Title(text: String) {
+    Text(
+        modifier = Modifier.semantics { heading() },
+        text = text,
+        style = MaterialTheme.typography.titleLarge,
+    )
 }
 
 object MainScreen {
